@@ -19,17 +19,23 @@ class UPS:
         self.initialization_finished = False
         self.maximum_current = 10
 
-    async def binary_sensor_update(self, binary_sensor: BinarySensor):
-        print(f"Binary sensor {binary_sensor.name} is {binary_sensor.state}")
+        self.add_callbacks_to_devices()
 
-    async def switch_update(self, switch: Switch):
-        print(f"The value of the {switch.name} is {switch.state}")
+
+
 
     def all_channels_intialized(self) -> bool:
         for channel in self.config.channel_list:
             if channel.sensor.resolve_state() is None:
                 return False
         return True
+
+
+    async def binary_sensor_update(self, binary_sensor: BinarySensor):
+        print(f"Binary sensor {binary_sensor.name} is {binary_sensor.state}")
+
+    async def switch_update(self, switch: Switch):
+        print(f"The value of the {switch.name} is {switch.state}")
 
     # chemat de fiecare data cand s-a modificat valoarea unui senzor
     async def sensor_update(self, sensor: Sensor):
@@ -38,6 +44,20 @@ class UPS:
             print(colored("All initialized!", 'green', attrs=['bold']))
             self.initialization_finished = True
         await self.lestare_delestare()
+
+
+    def add_callbacks_to_devices(self):
+        for device in self.xknx.devices:
+            if type(device) == type(Sensor):
+                device.device_updated_cb = self.sensor_update()
+            elif type(device) == type(BinarySensor):
+                device.device_updated_cb = self.binary_sensor_update()
+            elif type(device) == type(Switch):
+                device.device_updated_cb = self.switch_update()
+
+    async def sync_devices(self):
+        for device in self.xknx.devices:
+            await device.sync()
 
     def print_initialization(self):
         print("Afisam grupele citite din JSON")
@@ -124,9 +144,10 @@ async def main():
             local_ip="192.168.1.233")
     )
     with open("src/config.json") as f:
-       json_configuration = json.load(f)
+        json_configuration = json.load(f)
     ups1 = UPS(xknx=xknx, config_json=json_configuration['UPS1'])
     ups1.print_initialization()
+    await ups1.sync_devices()
 
 
 asyncio.run(main())
