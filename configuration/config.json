@@ -1,40 +1,32 @@
 {
 
   "UPS1": {
+    "name": "UPS1",
     "numar_canale": 10,
     "sensor": "1/1",
     "binary_sensor": "1/2",
+    "prezenta_tensiune": "1/2/0",
     "switch": "1/3",
-    "intensitate_curent_UPS": 10,
-    "intensitate_curent_fara_UPS": 5,
+    "global_maxim": 10,
+    "global_minim": 5,
     "curent_estimat_canale": [-1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1],
     "grupe": [
       {
         "name": "Grupa 1",
-        "canale": [
-          1,
-          2,
-          3
-        ],
+        "canale": [1, 2, 3],
         "max_current": 5.2
       },
       {
         "name": "Grupa 2",
-        "canale": [
-          4,
-          5,
-          6
-        ],
+        "canale": [4, 5, 6],
         "max_current": 10
       },
       {
         "name": "Grupa 3",
-        "canale": [
-          7,
-          8
-        ],
+        "canale": [7, 8],
         "max_current": 10
       }
     ]
+
   }
 }
