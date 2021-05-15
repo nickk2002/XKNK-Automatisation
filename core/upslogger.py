@@ -1,9 +1,6 @@
-from core.ups import UPS
-
-
 class UPSLogger:
 
-    def __init__(self, ups: UPS):
+    def __init__(self, ups):
         self.ups = ups
         self.config = ups.config
 

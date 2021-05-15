@@ -4,7 +4,7 @@ import json
 from xknx import XKNX
 from xknx.io import ConnectionConfig, ConnectionType
 
-from src.ups import UPS
+from core.ups import UPS
 
 
 async def main():
@@ -15,9 +15,9 @@ async def main():
             gateway_ip="192.168.1.52", gateway_port=3671,
             local_ip="192.168.1.233")
     )
-    with open("src/config.json") as f:
+    with open("configuration/config.json") as f:
         json_configuration = json.load(f)
     ups1 = UPS(xknx=xknx, name='UPS1', config_json=json_configuration['UPS1'])
-
+    await ups1.initialize()
 
 asyncio.run(main())

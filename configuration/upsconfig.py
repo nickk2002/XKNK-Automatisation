@@ -1,7 +1,6 @@
 from xknx.devices import Sensor, BinarySensor, Switch
-
-from src.configuration.channel import Channel
-from src.configuration.group import Group
+from configuration.channel import Channel
+from configuration.group import Group
 
 
 class UPSConfiguration:
