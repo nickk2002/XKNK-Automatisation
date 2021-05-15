@@ -11,6 +11,7 @@ class UPSConfiguration:
 
         self.channel_list = self.create_channels()
         self.group_list = self.create_groups()
+        self.prezenta_tensiune = self.create_binary_sensor_for_ups()
 
         self.global_minim = self.config["global_minim"]
         self.global_maxim = self.config["global_maxim"]
@@ -41,15 +42,14 @@ class UPSConfiguration:
             channels[i] = Channel(sensor=sensor, binary_sensor=binary_sensor, switch=switch, index=i)
         return channels
 
-    def create_binary_sensor_for_ups(self):
+    def create_binary_sensor_for_ups(self) -> BinarySensor:
 
-        prezenta_tensiune1 = BinarySensor(
+        return BinarySensor(
             self.ups.xknx,
             name=f'Prezenta tensiune {self.ups.name}',
             group_address_state='1/2/0',
             device_class='motion',
         )
-
 
     def create_groups(self):
         config_groups = self.config['grupe']
@@ -59,4 +59,3 @@ class UPSConfiguration:
                                   channel_list=group_config['canale'])
             group_list.append(created_group)
         return group_list
-

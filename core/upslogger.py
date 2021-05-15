@@ -30,3 +30,10 @@ class UPSLogger:
         print()
         print("Total UPS", total_current_ups)
         print("Grupe UPS", sum_group)
+
+    def print_groups(self):
+        for group in self.config.group_list:
+            print(group.name)
+            for channel_index in group.channel_list:
+                channel = self.config.channel_list[channel_index]
+                print(channel.name, channel.binary_sensor.name, channel.sensor.name, channel.switch.name)

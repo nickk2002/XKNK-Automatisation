@@ -12,10 +12,11 @@ from core.upslogger import UPSLogger
 class UPS:
     def __init__(self, xknx: XKNX, name: str, config_json: json):
         self.xknx = xknx
-        self.config = UPSConfiguration(ups=self, config_json=config_json)
         self.name = name
+        self.config = UPSConfiguration(ups=self, config_json=config_json)
 
         self.logger = UPSLogger(ups=self)
+        self.logger.print_groups()
 
         self.maxim_allowed_current = self.config.global_minim
 

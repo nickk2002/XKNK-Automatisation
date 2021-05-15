@@ -7,3 +7,5 @@ class Channel:
         self.binary_sensor = binary_sensor
         self.switch = switch
         self.index = index
+
+        self.name = f"Canal {self.index}"
