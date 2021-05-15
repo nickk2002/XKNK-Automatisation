@@ -4,7 +4,7 @@ from src.configuration.channel import Channel
 from src.configuration.group import Group
 
 
-class UPSConfiguration():
+class UPSConfiguration:
 
     def __init__(self, ups, config_json):
         self.ups = ups
@@ -12,6 +12,9 @@ class UPSConfiguration():
 
         self.channel_list = self.create_channels()
         self.group_list = self.create_groups()
+
+        self.global_minim = self.config["global_minim"]
+        self.global_maxim = self.config["global_maxim"]
 
         self.estimated_value_channels = self.config['curent_estimat_canale']
 
@@ -39,6 +42,16 @@ class UPSConfiguration():
             channels[i] = Channel(sensor=sensor, binary_sensor=binary_sensor, switch=switch, index=i)
         return channels
 
+    def create_binary_sensor_for_ups(self):
+
+        prezenta_tensiune1 = BinarySensor(
+            self.ups.xknx,
+            name=f'Prezenta tensiune {self.ups.name}',
+            group_address_state='1/2/0',
+            device_class='motion',
+        )
+
+
     def create_groups(self):
         config_groups = self.config['grupe']
         group_list = []
@@ -47,3 +60,4 @@ class UPSConfiguration():
                                   channel_list=group_config['canale'])
             group_list.append(created_group)
         return group_list
+
