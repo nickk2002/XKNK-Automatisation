@@ -7,7 +7,8 @@ class UPSConfiguration:
 
     def __init__(self, ups, config_json):
         self.ups = ups
-        self.config = config_json
+        self.general_configuration =  config_json
+        self.config = config_json[self.ups.name]
 
         self.channel_list = self.create_channels()
         self.group_list = self.create_groups()
@@ -16,12 +17,15 @@ class UPSConfiguration:
         self.global_minim = self.config["global_minim"]
         self.global_maxim = self.config["global_maxim"]
 
-        self.estimated_value_channels = self.config['curent_estimat_canale']
-
     def create_channels(self):
-        channel_number = int(self.config["numar_canale"])
-        channels = [Channel] * (channel_number + 1)
-        for i in range(1, channel_number + 1):
+        interval_canale = self.config['interval_canale']
+        start_canal = interval_canale[0]
+        end_canal = interval_canale[1]
+
+        estimated_value_channels = self.general_configuration['curent_estimat_canale']
+
+        channels = [Channel]
+        for i in range(start_canal, end_canal + 1):
             sensor = Sensor(
                 self.ups.xknx,
                 name=f'Curent {i}',
@@ -32,23 +36,22 @@ class UPSConfiguration:
                 self.ups.xknx,
                 name=f'CH{i}_state',
                 group_address_state=self.config["binary_sensor"] + "/" + str(i),
-                device_class='motion',
             )
             switch = Switch(
                 self.ups.xknx,
                 name=f'switch {i}',
                 group_address=self.config["switch"] + "/" + str(i),
             )
-            channels[i] = Channel(sensor=sensor, binary_sensor=binary_sensor, switch=switch, index=i)
+            channels.append(Channel(sensor=sensor, binary_sensor=binary_sensor, switch=switch,
+                                    estimated_value=estimated_value_channels[i], index=i))
         return channels
 
     def create_binary_sensor_for_ups(self) -> BinarySensor:
-
+        group_adress_tensiune = self.config["prezenta_tensiune"]
         return BinarySensor(
             self.ups.xknx,
             name=f'Prezenta tensiune {self.ups.name}',
-            group_address_state='1/2/0',
-            device_class='motion',
+            group_address_state=group_adress_tensiune,
         )
 
     def create_groups(self):

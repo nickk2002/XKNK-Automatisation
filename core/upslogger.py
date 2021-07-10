@@ -18,19 +18,18 @@ class UPSLogger:
 
         for group in self.config.group_list:
             total_group = 0  # initializare suma curentilor pe grup UPS
-            for channel in group.channel_list:
+            for channel_index in group.channel_list:
+                channel = self.config.channel_list[channel_index]
                 sensor = channel.sensor
                 if sensor.resolve_state() is not None:
                     total_current_ups += sensor.resolve_state()
                     total_group += sensor.resolve_state()
             sum_group.append(total_group)
         print("===============")
-        for index in range(1, len(self.config.channel_list)):
-            print(self.config.channel_list[index], end=' ')
+      
         print()
         print("Total UPS", total_current_ups)
         print("Grupe UPS", sum_group)
-
     def print_groups(self):
         for group in self.config.group_list:
             print(group.name)

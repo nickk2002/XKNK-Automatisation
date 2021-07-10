@@ -16,8 +16,7 @@ class UPS:
         self.config = UPSConfiguration(ups=self, config_json=config_json)
 
         self.logger = UPSLogger(ups=self)
-        self.logger.print_groups()
-
+        # self.logger.print_groups()
         self.maxim_allowed_current = self.config.global_minim
 
         self.lestare_delestare_lock = Lock()
@@ -25,28 +24,38 @@ class UPS:
 
         self.initialization_finished = False
 
-        self.add_callbacks_to_devices()
-
     def all_channels_intialized(self) -> bool:
-        for channel in self.config.channel_list:
-            if channel.sensor.resolve_state() is None:
+        for index in range(1, len(self.config.channel_list)):
+            channel = self.config.channel_list[index]
+            if channel.binary_sensor.state is None or channel.sensor.resolve_state() is None:
                 return False
         return True
 
-    # Callbacks #
-    @staticmethod
-    async def binary_sensor_update(binary_sensor: BinarySensor):
+    async def binary_sensor_update(self,binary_sensor: BinarySensor):
         print(f"Binary sensor {binary_sensor.name} is {binary_sensor.state}")
+        if not self.all_channels_intialized():
+            return
+        print("Initialized!")
+        self.logger.print_debug_information()
+        if self.initialization_finished is False and self.all_channels_intialized():
+            print(colored("All initialized!", 'green', attrs=['bold']))
+            self.initialization_finished = True
+        await self.lestare_delestare()
+
 
     @staticmethod
     async def switch_update(switch: Switch):
         print(f"The value of the {switch.name} is {switch.state}")
 
     async def sensor_update(self, sensor: Sensor):
+
+        # self.logger.print_debug_information()
         print("Sensor updated", sensor.name, sensor.resolve_state())
 
         if not self.all_channels_intialized():
             return
+        print("Initialized!")
+        self.logger.print_debug_information()
         if self.initialization_finished is False and self.all_channels_intialized():
             print(colored("All initialized!", 'green', attrs=['bold']))
             self.initialization_finished = True
@@ -63,56 +72,62 @@ class UPS:
             await self.lestare_delestare()
 
     def add_callbacks_to_devices(self):
+
         for device in self.xknx.devices:
-            if type(device) == type(Sensor):
-                device.device_updated_cb = self.sensor_update
-            elif type(device) == type(BinarySensor):
-                device.device_updated_cb = self.binary_sensor_update
+            if isinstance(device, Sensor):
+                device.register_device_updated_cb(self.sensor_update)
+
+                print(device.name, " has cb ")
+            elif isinstance(device, BinarySensor):
+                device.register_device_updated_cb(self.binary_sensor_update)
                 if "tensiune" in device.name:
-                    device.device_updated_cb = self.prezenta_tensiune_update
-            elif type(device) == type(Switch):
-                device.device_updated_cb = self.switch_update
+                    device.register_device_updated_cb(self.prezenta_tensiune_update)
+            elif isinstance(device, Switch):
+                device.register_device_updated_cb(self.switch_update)
 
     async def sync_devices(self):
         for device in self.xknx.devices:
             await device.sync()
 
     async def initialize(self):
-        self.logger.print_initialization()
+        self.add_callbacks_to_devices()
+        # self.logger.print_initialization()
         await self.sync_devices()
+        # print("Initial " ,self.all_channels_intialized())
 
     def get_maximum_current(self):
         return self.maxim_allowed_current
 
     async def lestare_delestare(self):
         async with self.lestare_delestare_lock:
+
             print("Lestare delestare")
             total_sum = 0
 
             for group in self.config.group_list:
                 group_sum = 0
-                for channel in group.channel_list:
+                for channel_index in group.channel_list:
+                    channel = self.config.channel_list[channel_index]
                     switch = channel.switch
                     sensor = channel.sensor
                     binary_sensor = channel.binary_sensor
 
                     current_value = sensor.resolve_state()
-                    estimated_current_value = self.config.estimated_value_channels[channel.index]
+                    estimated_current_value = channel.estimated_value
 
                     if current_value is None:
                         colored(f"Am gasit None {channel.index} !!!", 'red')
                         return
                     if channel.binary_sensor.state == 1:
                         # daca ma aflu pe un canal deschis verific sa nu depaseasca limitele
-                        if group_sum + current_value >= group.max_current or \
-                                total_sum + current_value >= self.get_maximum_current():
+                        if group_sum + current_value >= group.max_current or total_sum + current_value >= self.get_maximum_current():
                             await channel.switch.set_off()
                             if group_sum + current_value >= group.max_current:
                                 print(
-                                    colored(f"Deschid canalul {switch.name} Pentru ca depaseste limita de grup", "grey",
+                                    colored(f"Deschid canalul {channel.index} Pentru ca depaseste limita de grup", "grey",
                                             attrs=['bold']))
                             elif group_sum + current_value >= self.get_maximum_current():
-                                print(colored(f"Deschid canalul {switch.name} Pentru ca depaseste limita de totala",
+                                print(colored(f"Deschid canalul {channel.index} Pentru ca depaseste limita de totala",
                                               "grey",
                                               attrs=['bold']))
                             else:
