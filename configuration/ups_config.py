@@ -55,10 +55,15 @@ class UPSConfiguration:
         )
 
     def create_groups(self):
+        interval_canale = self.config['interval_canale']
+        start_canal = interval_canale[0]
         config_groups = self.config['grupe']
         group_list = []
         for group_config in config_groups:
+
+            mapped_indexes = [index_canal - start_canal for index_canal in group_config['canale']]
+            channels_for_group = [self.channel_list[index_canal] for index_canal in mapped_indexes]
             created_group = Group(name=group_config['name'], max_current=group_config['max_current'],
-                                  channel_list=group_config['canale'])
+                                  channel_list=channels_for_group)
             group_list.append(created_group)
         return group_list

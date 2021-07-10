@@ -5,8 +5,8 @@ from termcolor import colored
 from xknx import XKNX
 from xknx.devices import BinarySensor, Switch, Sensor
 
-from configuration.upsconfig import UPSConfiguration
-from core.upslogger import UPSLogger
+from configuration.ups_config import UPSConfiguration
+from core.ups_debugger import UPSLogger
 
 
 class UPS:
@@ -25,8 +25,7 @@ class UPS:
         self.initialization_finished = False
 
     def all_channels_intialized(self) -> bool:
-        for index in range(1, len(self.config.channel_list)):
-            channel = self.config.channel_list[index]
+        for channel in self.config.channel_list:
             if channel.binary_sensor.state is None or channel.sensor.resolve_state() is None:
                 return False
         return True
@@ -76,8 +75,6 @@ class UPS:
         for device in self.xknx.devices:
             if isinstance(device, Sensor):
                 device.register_device_updated_cb(self.sensor_update)
-
-                print(device.name, " has cb ")
             elif isinstance(device, BinarySensor):
                 device.register_device_updated_cb(self.binary_sensor_update)
                 if "tensiune" in device.name:
@@ -91,9 +88,7 @@ class UPS:
 
     async def initialize(self):
         self.add_callbacks_to_devices()
-        # self.logger.print_initialization()
         await self.sync_devices()
-        # print("Initial " ,self.all_channels_intialized())
 
     def get_maximum_current(self):
         return self.maxim_allowed_current
@@ -106,8 +101,7 @@ class UPS:
 
             for group in self.config.group_list:
                 group_sum = 0
-                for channel_index in group.channel_list:
-                    channel = self.config.channel_list[channel_index]
+                for channel in group.channel_list:
                     switch = channel.switch
                     sensor = channel.sensor
                     binary_sensor = channel.binary_sensor

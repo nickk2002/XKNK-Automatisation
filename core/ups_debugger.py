@@ -18,8 +18,7 @@ class UPSLogger:
 
         for group in self.config.group_list:
             total_group = 0  # initializare suma curentilor pe grup UPS
-            for channel_index in group.channel_list:
-                channel = self.config.channel_list[channel_index]
+            for channel in group.channel_list:
                 sensor = channel.sensor
                 if sensor.resolve_state() is not None:
                     total_current_ups += sensor.resolve_state()
@@ -33,6 +32,5 @@ class UPSLogger:
     def print_groups(self):
         for group in self.config.group_list:
             print(group.name)
-            for channel_index in group.channel_list:
-                channel = self.config.channel_list[channel_index]
+            for channel in group.channel_list:
                 print(channel.name, channel.binary_sensor.name, channel.sensor.name, channel.switch.name)
