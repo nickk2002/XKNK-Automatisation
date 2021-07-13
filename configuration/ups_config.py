@@ -24,7 +24,7 @@ class UPSConfiguration:
 
         estimated_value_channels = self.general_configuration['curent_estimat_canale']
 
-        channels = [Channel]
+        channels = []
         for i in range(start_canal, end_canal + 1):
             sensor = Sensor(
                 self.ups.xknx,

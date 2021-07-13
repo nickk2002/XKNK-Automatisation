@@ -17,7 +17,7 @@ async def main():
         connection_config=ConnectionConfig(
             connection_type=ConnectionType.TUNNELING,
             gateway_ip="192.168.100.71", gateway_port=3671,
-            local_ip="192.168.100.69")
+            local_ip="192.168.100.73")
     )
     with open("configuration/config.json") as f:
         json_configuration = json.load(f)
