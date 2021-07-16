@@ -12,12 +12,14 @@ async def telegram_received_cb(telegram):
 
 
 async def main():
+    
+    # rasbery py 192.168.1.233
     xknx = XKNX(
         daemon_mode=True,
         connection_config=ConnectionConfig(
             connection_type=ConnectionType.TUNNELING,
-            gateway_ip="192.168.100.71", gateway_port=3671,
-            local_ip="192.168.100.73")
+            gateway_ip="192.168.1.9", gateway_port=3671,
+            local_ip="192.168.1.233")
     )
     with open("configuration/config.json") as f:
         json_configuration = json.load(f)

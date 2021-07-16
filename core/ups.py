@@ -15,7 +15,8 @@ class UPS:
         self.name = name
         self.config = UPSConfiguration(ups=self, config_json=config_json)
         self.logger = UPSLogger(ups=self)
-        self.maxim_allowed_current = self.config.global_minim
+        self.maxim_allowed_current = self.config.global_maxim
+        
 
         self.lestare_delestare_lock = Lock()
         self.prezenta_tensiune_lock = Lock()
@@ -31,14 +32,7 @@ class UPS:
     async def binary_sensor_update(self,binary_sensor: BinarySensor):
         print(f"Binary sensor {binary_sensor.name} is {binary_sensor.state}")
 
-        if not self.all_channels_intialized():
-            return
-        print("Initialized!")
-        self.logger.print_debug_information()
-        if self.initialization_finished is False and self.all_channels_intialized():
-            print(colored("All initialized!", 'green', attrs=['bold']))
-            self.initialization_finished = True
-        await self.lestare_delestare()
+
 
 
     @staticmethod
@@ -65,7 +59,7 @@ class UPS:
                 self.maxim_allowed_current = self.config.global_minim
                 print(f"Tensiunea maxima {self.name} =", self.maxim_allowed_current)
             else:
-                self.maxim_allowed_current = self.config.global_minim
+                self.maxim_allowed_current = self.config.global_maxim
                 print(f"Tensiunea maxima {self.name} =", self.maxim_allowed_current)
             await self.lestare_delestare()
 
